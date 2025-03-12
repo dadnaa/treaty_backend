@@ -12,3 +12,78 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model User {
+  matricule     Int       @id  
+  firstName     String
+  lastName      String
+  email         String    @unique 
+  phoneNumber   String    @unique
+  password      String    // Hashed password stored here
+  photo         String?   // Profile picture URL
+  roles         UserRole[] // Stores multiple roles for a user
+  accountStatus AccountStatus @default(ACTIVE) // Active or Inactive account
+  doctor        Doctor?
+  patient       Patient?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Doctor {
+  userId        Int  @id @map("matricule") // Uses same ID as User
+  specialization String
+  yearsOfExperience Int
+  user          User @relation(fields: [userId], references: [matricule])
+}
+
+model Patient {
+  userId         Int  @id @map("matricule")
+  user           User @relation(fields: [userId], references: [matricule])
+  student        StudentPatient?
+  employee       EmployeePatient?
+}
+
+model StudentPatient {
+  userId     Int  @id @map("matricule")
+  yearOfStudy Int
+  patient    Patient @relation(fields: [userId], references: [userId])
+}
+
+model EmployeePatient {
+  userId    Int  @id @map("matricule")
+  jobTitle  String
+  patient   Patient @relation(fields: [userId], references: [userId])
+}
+model Permission {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique  // Example: "CREATE_PATIENT", "DELETE_USER"
+  roles    RolePermission[]
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique  // Example: "DOCTOR", "ADMIN", "PATIENT"
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model UserRole {
+  userId  Int
+  roleId  Int
+  user    User @relation(fields: [userId], references: [matricule])
+  role    Role @relation(fields: [roleId], references: [id])
+  @@id([userId, roleId]) // Composite key for many-to-many relationship
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role        @relation(fields: [roleId], references: [id])
+  permission   Permission  @relation(fields: [permissionId], references: [id])
+  @@id([roleId, permissionId]) // Composite key
+}
+
