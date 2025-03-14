@@ -20,6 +20,10 @@ model User {
   phoneNumber   String    @unique
   password      String    // Hashed password stored here
   photo         String?   // Profile picture URL
+  dateOfBirth   DateTime // User's date of birth (optional)
+  placeOfBirth  String   // User's place of birth (optional)
+  address       String   // User's address (optional)
+  gender        String
   roleName      String 
   accountStatus AccountStatus @default(ACTIVE) // Active or Inactive account
   doctor        Doctor?
@@ -39,26 +43,54 @@ model Doctor {
   userId        BigInt  @id @map("matricule") // Uses same ID as User
   specialization String
   yearsOfExperience Int
+  workSchedules    WorkSchedule[]
+   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   user          User @relation(fields: [userId], references: [matricule])
 }
-
+model WorkSchedule {
+  id        Int     @id @default(autoincrement())
+  doctorId  BigInt  @unique
+  dayOfWeek String  // e.g., "Monday"
+  startTime String  // e.g., "08:00"
+  endTime   String  // e.g., "16:00"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  doctor    Doctor  @relation(fields: [doctorId], references: [userId])
+}
 model Patient {
   userId         BigInt  @id @map("matricule")
   user           User @relation(fields: [userId], references: [matricule])
   student        StudentPatient?
   employee       EmployeePatient?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  medicalRecord  MedicalRecord?
+}
+model MedicalRecord {
+  patientId  BigInt  @id @map("matricule")
+    patient    Patient @relation(fields: [patientId], references: [userId])
+  bloodType  String?
+  conditions String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model StudentPatient {
   userId     BigInt  @id @map("matricule")
   yearOfStudy Int
   patient    Patient @relation(fields: [userId], references: [userId])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model EmployeePatient {
   userId    BigInt  @id @map("matricule")
   jobTitle  String
   patient   Patient @relation(fields: [userId], references: [userId])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 model Permission {
   id       Int       @id @default(autoincrement())

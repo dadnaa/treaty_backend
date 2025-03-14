@@ -17,7 +17,11 @@ const createAdmin = async () => {
                 lastName: "User",
                 email: adminEmail,
                 phoneNumber: "0799750495",
-                roleName: "Admin", 
+                dateOfBirth:new Date(2005,11,16),   
+                placeOfBirth:"tissemsilt",
+                address:"algiers,algeria",           
+                gender :"female", 
+                roleName: "admin", 
                 password: hashedPassword,
             },
         });

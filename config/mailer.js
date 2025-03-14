@@ -6,7 +6,7 @@ const sendEmail = async (filePaths) => {
     try {
         // Fetch the admin's email from the database
         const admin = await prisma.user.findFirst({
-            where: { roleName: "Admin" },
+            where: { roleName: "admin" },
             select: { email: true },
         });
 
