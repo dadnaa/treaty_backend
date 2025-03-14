@@ -12,3 +12,45 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  matricule   String   @id // Matricule devient la clé primaire
+  firstName   String
+  lastName    String
+  email       String   @unique
+  password    String   // ✅ Ajout du champ password
+  photo       String?
+  phoneNumber String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  role        Role?    @relation(fields: [roleId], references: [id])
+  roleId      Int?
+  patientInfo PatientInfo?
+}
+
+model PatientInfo {
+  id        Int    @id @default(autoincrement())
+  userMatricule String @unique // Lié à `User.matricule`
+  status    String
+  medicalRecord MedicalRecord? // Relation avec le dossier médical
+
+  user      User   @relation(fields: [userMatricule], references: [matricule], onDelete: Cascade) // ✅ Ajout de onDelete: Cascade
+}
+
+model MedicalRecord {
+  id         Int    @id @default(autoincrement())
+  patientMatricule String @unique
+  details    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  patient    PatientInfo @relation(fields: [patientMatricule], references: [userMatricule], onDelete: Cascade) // ✅ Ajout de onDelete: Cascade
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique  // admin, directeur, patient
+  users User[] // Un rôle peut avoir plusieurs utilisateurs
+}
